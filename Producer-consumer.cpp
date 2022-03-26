@@ -20,25 +20,23 @@ int _count = 0;//保存缓冲区中数据数
 
 void *produce(void*){
     for(int i=0;i<10;i++){
-        sem_wait(empty);//Ｐ操作，ｅｍｐｔｙ减少１，如果小于０，堵塞
+        sem_wait(empty);//Ｐ操作，empty--，如果小于０，block线程
         //临界区上锁，保证同时只能有一个生产者访问
         m.lock();
         cout << "生产了第" << ++_count << "个产品！" << endl;
         m.unlock();//使用完临界区后解锁，让其他生产者使用
-        sem_post(full);//Ｖ操作，ｆｕｌｌ加１，如果小于等于０，唤醒线程
+        sem_post(full);//Ｖ操作，full++，如果小于等于０，唤醒线程
     }
-    return nullptr;
 }
 
 void* consume(void*){
     for(int i=0;i<10;i++){
-        sem_wait(full);//Ｐ操作，full减少１，如果小于０，堵塞
+        sem_wait(full);//Ｐ操作，full--，如果小于０，block线程
         m.lock(); //临界区上锁，保证同时只能有一个消费者访问
         cout << "消费了一个产品，还剩余" << --_count<< "个产品" << endl;
         m.unlock();//使用完临界区后解锁，让其他消费者使用
         sem_post(empty);//Ｖ操作，ｆｕｌｌ加１，如果小于等于０，唤醒线程
     }
-    return nullptr;
 }
 
 int main(){
